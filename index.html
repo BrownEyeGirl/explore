@@ -21,8 +21,8 @@ let zoomDist = 2;
 
 
 // Initialize map
-const map = L.map('map').setView([long, lat], zoomDist); 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'&copy; OSM'}).addTo(map);
+//const map = L.map('map').setView([long, lat], zoomDist); 
+//L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'&copy; OSM'}).addTo(map);
 
 // Overpass query (out body -> returns array of all body data, geom -> returns array of all coordinates listed for a spot)
 const query = `
@@ -68,7 +68,7 @@ fetch('https://overpass.kumi.systems/api/interpreter', {
         document.getElementById("results").appendChild(p);
     }
 });
-    //console.log(data.elements); // check if we got geometry
+    console.log(data.elements); // check if we got geometry
     
     // change background color when loaded 
     // Get a specific element by its ID
