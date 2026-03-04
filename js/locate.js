@@ -107,13 +107,6 @@ window.onload = function () {
         console.log("places found."); 
            // console.log(data.elements); // check if we got geometry
 
-            // cycle through to find each elements data 
-            data.elements.forEach(el => {
-                if(el.type === "way" && el.geometry){
-                    const coords = el.geometry.map(p => [p.lat, p.lon]);
-                   // L.polygon(coords, {color:'red', fillOpacity:0.5}).addTo(map);
-                }
-            });
         })
         .catch(err => console.error(err));
     }
