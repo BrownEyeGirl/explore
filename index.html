@@ -5,87 +5,10 @@
 <title>Abandoned Buildings Montreal</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<style>#map {height: 50vh; width: 50%;}</style>
+<script src="js/locate.js"></script>
 </head>
+
 <body>
-<div id="map"></div>
-<div id="results"></div>
-
-<script>
-
-// User long, lat 
-let long = 45.5017;
-let lat = -73.5673; 
-let boundingBoxThreshold = 0.05; 
-let zoomDist = 2; 
-
-
-// Initialize map
-//const map = L.map('map').setView([long, lat], zoomDist); 
-//L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'&copy; OSM'}).addTo(map);
-
-// Overpass query (out body -> returns array of all body data, geom -> returns array of all coordinates listed for a spot)
-const query = `
-[out:json][timeout:180];
-(
-  way["building"]["abandoned"="yes"](${long-boundingBoxThreshold},${lat-boundingBoxThreshold},${long+boundingBoxThreshold},${lat+boundingBoxThreshold}); 
-);
-out body geom; 
-`;
-
-// Fetch from Overpass API
-fetch('https://overpass.kumi.systems/api/interpreter', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/x-www-form-urlencoded' 
-    },
-    body: 'data=' + encodeURIComponent(query) // body is defined as data=[our overpass query here, URL-encoded]
-})
-.then(r => r.json())
-.then(data => {
-
-    const resultsDiv = document.getElementById("results");
-    
-    data.elements.forEach(el => {
-    if (el.type === "way" && el.bounds) {
-
-        const avgLat = (el.bounds.minlat + el.bounds.maxlat) / 2;
-        const avgLon = (el.bounds.minlon + el.bounds.maxlon) / 2;
-
-        // Create paragraph
-        const p = document.createElement("p");
-
-        // Create anchor tag
-        const a = document.createElement("a");
-        a.href = `https://www.google.com/maps/search/?api=1&query=${avgLat}%2C${avgLon}`;//`https://www.google.com/maps/@${avgLat},${avgLon},${zoomDist}z`;   // same link for all
-        a.target = "_blank";                        // opens in new tab
-        a.textContent = `Building ${el.id}: ${avgLat}, ${avgLon}`;
-
-        // Put <a> inside <p>
-        p.appendChild(a);
-
-        // Add to page
-        document.getElementById("results").appendChild(p);
-    }
-});
-    console.log(data.elements); // check if we got geometry
-    
-    // change background color when loaded 
-    // Get a specific element by its ID
-    //const myElement = document.getElementById("map");
-
-    // Set the background color to blue
-   // myElement.style.backgroundColor = "lightblue"; 
-
-
-    data.elements.forEach(el => {
-        if(el.type === "way" && el.geometry){
-            const coords = el.geometry.map(p => [p.lat, p.lon]);
-            L.polygon(coords, {color:'red', fillOpacity:0.5}).addTo(map);
-        }
-    });
-})
-.catch(err => console.error(err));
-</script>
+<div id="coordinate-results"></div>
 </body>
 </html>
