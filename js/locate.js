@@ -6,7 +6,7 @@ window.onload = function () {
     // variables, default values 
     let long = 45.5017;
     let lat = -73.5673; 
-    let boundingBoxThreshold = 0.2; 
+    let boundingBoxThreshold = 0.3; 
     let zoomDist = 2; 
 
 
