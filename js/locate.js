@@ -36,7 +36,6 @@ window.onload = function () {
                 long = position.coords.longitude;
                 console.log("Latitude", lat);
                 console.log("Longitude", long);
-                getPlaces();
 
             },
             (err) => {
@@ -119,7 +118,7 @@ window.onload = function () {
     button.addEventListener("click", () => {
         console.log("location")
         getLocation();
-       // getPlaces(); 
+        getPlaces(); 
         // later:
         // getLocation();
     });
