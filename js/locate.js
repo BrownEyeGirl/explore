@@ -36,6 +36,7 @@ window.onload = function () {
                 long = position.coords.longitude;
                 console.log("Latitude", lat);
                 console.log("Longitude", long);
+                getPlaces();
 
             },
             (err) => {
@@ -56,6 +57,10 @@ window.onload = function () {
         // Overpass query (out body -> returns array of all body data, geom -> returns array of all coordinates listed for a spot) // less accurate results -> way["disused"="yes"] (${long-boundingBoxThreshold},${lat-boundingBoxThreshold},${long+boundingBoxThreshold},${lat+boundingBoxThreshold});
         console.log("places loading..."); 
         
+        // Establish div location + declare loading 
+        const resultsDiv = document.getElementById("coordinate-results");
+        
+
         // gets different types of data from the api, gives location range of 2*boundingBoxThreshold 
         const query = `
         [out:json][timeout:180];
@@ -78,8 +83,6 @@ window.onload = function () {
         })
         .then(r => r.json()) // when the fetch request finishes, this takes the response and convert it into usable JSON.
         .then(data => { // take usable JSOn file, store it as the name "data",  and run this function to extract different classifications of data
-
-            const resultsDiv = document.getElementById("coordinate-results");
             
             data.elements.forEach(el => {
             if (el.type === "way" && el.bounds) {
@@ -116,7 +119,7 @@ window.onload = function () {
     button.addEventListener("click", () => {
         console.log("location")
         getLocation();
-        getPlaces(); 
+       // getPlaces(); 
         // later:
         // getLocation();
     });
