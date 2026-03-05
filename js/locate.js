@@ -21,7 +21,7 @@ window.onload = function () {
 
 
     /* Create Map */ 
-//mapboxgl.accessToken = 'pk.eyJ1IjoiYWJoaXZvbGV0aSIsImEiOiJjbW05cWV4ZTEwNXJtMnVwdjNyNmg3YmtzIn0.18DTC_mGG-07zo8XgcOgXg';
+mapboxgl.accessToken = 'pk.eyJ1IjoiYWJoaXZvbGV0aSIsImEiOiJjbW05cWV4ZTEwNXJtMnVwdjNyNmg3YmtzIn0.18DTC_mGG-07zo8XgcOgXg';
 
 const map = new mapboxgl.Map({ //
   container: 'map',
@@ -43,6 +43,9 @@ map.on('load', () => {
     showUserHeading: true
   })
 );
+
+// zoom in the centre
+
 
   // 3D BUILDINGS
   map.addLayer({
@@ -246,9 +249,16 @@ map.addControl(geocoder);
         highlightBuilding(lng, lat);
 
 
+
         map.flyTo({
             center: [lng, lat],
-            zoom: 18
+            zoom: 18, 
+             padding: {
+                left: 300,   // width of your sidebar
+                right: 0,
+                top: 0,
+                bottom: 0
+            }
         });
     });
 }
@@ -277,10 +287,6 @@ map.addControl(geocoder);
 
     /* Fly To Coors */ 
     function zoomIn(lo, la) {  // note: in mapping softwares its switched long, lat is standard 
-
-        highlightBuilding(lo, la); 
-        addColoredPin(lo, la); 
-      //  coordinateFeature(lo, la);
         
         console.log("zooming"); 
         map.flyTo({
