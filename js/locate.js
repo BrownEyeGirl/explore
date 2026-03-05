@@ -6,22 +6,66 @@ window.onload = function () {
     // variables, default values 
     let long = 45.5017;
     let lat = -73.5673; 
-    let boundingBoxThreshold = 0.3; 
+    let boundingBoxThreshold = 0.05; 
     let zoomDist = 2; 
 
 
-    // Create button element
-    const button = document.createElement("button");
+    // Get button element
+    const button = document.getElementById("locate"); 
+    console.log(button); 
 
-    // Set id (so CSS can style it)
-    button.id = "locBtn";
+    // Establish div location + declare loading 
+        const resultsDiv = document.getElementById("coordinate-results");
 
-    // Set text
-    button.textContent = "Find cool spots near me";
+    resultsDiv.style.visibility = "hidden";
 
-    // Add to page
-    document.body.appendChild(button);
 
+    /* Create Map */ 
+mapboxgl.accessToken = 'pk.eyJ1IjoiYWJoaXZvbGV0aSIsImEiOiJjbW05cWV4ZTEwNXJtMnVwdjNyNmg3YmtzIn0.18DTC_mGG-07zo8XgcOgXg';
+
+const map = new mapboxgl.Map({ //
+  container: 'map',
+  style: 'mapbox://styles/mapbox/dark-v11',
+  center: [-73.5673, 45.5017],
+  zoom: 15,
+  pitch: 60,
+  bearing: -20,
+  antialias: true
+});
+
+map.on('load', () => {
+  map.addControl(
+  new mapboxgl.GeolocateControl({
+    positionOptions: {
+      enableHighAccuracy: true
+    },
+    trackUserLocation: true,
+    showUserHeading: true
+  })
+);
+
+  // 3D BUILDINGS
+  map.addLayer({
+     id: '3d-buildings',
+    source: 'composite',
+    'source-layer': 'building',
+    filter: ['==', 'extrude', 'true'],
+    type: 'fill-extrusion',
+    minzoom: 4,
+    paint: {
+      'fill-extrusion-color': [
+         'case',
+      ['boolean', ['feature-state', 'selected'], false],
+      '#FFF', 
+        '#111'
+      ],
+      'fill-extrusion-height': ['get', 'height'],
+      'fill-extrusion-base': ['get', 'min_height'],
+      'fill-extrusion-opacity': 1
+    }
+  });
+
+});
 
     /* Get Current User Location */ 
     function getLocation() {
@@ -55,10 +99,6 @@ window.onload = function () {
         
         // Overpass query (out body -> returns array of all body data, geom -> returns array of all coordinates listed for a spot) // less accurate results -> way["disused"="yes"] (${long-boundingBoxThreshold},${lat-boundingBoxThreshold},${long+boundingBoxThreshold},${lat+boundingBoxThreshold});
         console.log("places loading..."); 
-        
-        // Establish div location + declare loading 
-        const resultsDiv = document.getElementById("coordinate-results");
-        
 
         // gets different types of data from the api, gives location range of 2*boundingBoxThreshold 
         const query = `
@@ -87,17 +127,28 @@ window.onload = function () {
             if (el.type === "way" && el.bounds) {
 
                 // Get average location for each element
-                const avgLat = (el.bounds.minlat + el.bounds.maxlat) / 2;
-                const avgLon = (el.bounds.minlon + el.bounds.maxlon) / 2;
+                let avgLat = (el.bounds.minlat + el.bounds.maxlat) / 2;
+                let avgLon = (el.bounds.minlon + el.bounds.maxlon) / 2;
 
                 // Create paragraph
                 const p = document.createElement("p");
+                dropPinAt(avgLon, avgLat);
 
                 // Create anchor tag to link to google maps
-                const a = document.createElement("a");
-                a.href = `https://www.google.com/maps/search/?api=1&query=${avgLat}%2C${avgLon}`;//`https://www.google.com/maps/@${avgLat},${avgLon},${zoomDist}z`;   // same link for all
-                a.target = "_blank";                        // opens in new tab
-                a.textContent = `Building ${el.id}: ${avgLat}, ${avgLon}`;
+                const a = document.createElement("button");
+                
+                //a.href = "#" 
+                // a.href = `zoomIn(${avgLat}, ${avgLon})`; // to google maps: `https://www.google.com/maps/search/?api=1&query=${avgLat}%2C${avgLon}`;//`https://www.google.com/maps/@${avgLat},${avgLon},${zoomDist}z`;   // same link for all
+                
+                a.target = "_blank"; 
+                let shortLat = avgLat.toFixed(3); 
+                let shortLon = avgLon.toFixed(3);                // opens in new tab
+                a.textContent = `Lat ${shortLat}, Lon ${shortLon} \n`;
+
+                a.addEventListener("click", (e) => {
+                    e.preventDefault();             // prevent page jump
+                    zoomIn(avgLon, avgLat);         // call your function
+                });
 
                 // Put <a> inside <p>
                 p.appendChild(a);
@@ -105,24 +156,212 @@ window.onload = function () {
                 // Add to page
                 resultsDiv.appendChild(p);
             }
+            //zoomIn(avgLat, avgLon); 
         });
         console.log("places found."); 
-           // console.log(data.elements); // check if we got geometry
+        
+        console.log(data.elements); // check if we got geometry
+        // show results div 
+        resultsDiv.style.visibility = "visible";
 
         })
         .catch(err => console.error(err));
     }
 
 
-    /* Add Button Triggers */ 
-    button.addEventListener("click", () => {
-        console.log("location")
-        getLocation();
-        getPlaces(); 
-        // later:
-        // getLocation();
+
+
+
+    const coordinatesGeocoder = function (query) {
+  const matches = query.match(
+    /^[ ]*(?:Lat: )?(-?\d+\.?\d*)[, ]+(?:Lng: )?(-?\d+\.?\d*)[ ]*$/i
+  );
+  if (!matches) return null;
+
+  function coordinateFeature(lng, lat) {
+    return {
+      center: [lng, lat],
+      geometry: {
+        type: 'Point',
+        coordinates: [lng, lat]
+      },
+      place_name: 'Lat: ' + lat + ' Lng: ' + lng,
+      place_type: ['coordinate'],
+      type: 'Feature'
+    };
+  }
+
+  const coord1 = Number(matches[1]);
+  const coord2 = Number(matches[2]);
+  const geocodes = [];
+
+  if (coord1 < -90 || coord1 > 90) {
+    geocodes.push(coordinateFeature(coord1, coord2));
+  }
+
+  if (coord2 < -90 || coord2 > 90) {
+    geocodes.push(coordinateFeature(coord2, coord1));
+  }
+
+  if (geocodes.length === 0) {
+    geocodes.push(coordinateFeature(coord1, coord2));
+    geocodes.push(coordinateFeature(coord2, coord1));
+  }
+
+  return geocodes;
+};
+
+const geocoder = new MapboxGeocoder({
+  accessToken: mapboxgl.accessToken,
+  localGeocoder: coordinatesGeocoder,
+  mapboxgl: mapboxgl,
+  zoom: 16,
+  placeholder: 'Search or type: lng, lat',
+  reverseGeocode: true
+});
+
+map.addControl(geocoder);
+
+// Remove the original geocoder.on('result') listener
+// and trigger manually on button click
+
+
+   function dropPinAt(lng, lat) {
+
+    // Use your coordinatesGeocoder function to get a Feature object
+    const features = coordinatesGeocoder(`${lat}, ${lng}`);
+    if (!features || features.length === 0) return;
+
+    const feature = features[0];
+
+    // Create marker and store it in a variable
+    const marker = new mapboxgl.Marker({ color: "#ff0000" })
+        .setLngLat([lng, lat])
+        .addTo(map);
+
+    // Make the marker clickable
+    marker.getElement().addEventListener("click", () => {
+        console.log("Pin clicked:", lng, lat);
+        addColoredPin(lng, lat); 
+        highlightBuilding(lng, lat);
+
+
+        map.flyTo({
+            center: [lng, lat],
+            zoom: 18
+        });
+    });
+}
+
+    // Keep a reference to the last marker
+    let lastMarker = null;
+
+    // Function to add a colored pin at a given coordinate and remove the old one
+    function addColoredPin(lng, lat, color = "#0000ffff") {
+        // Remove the previous marker if it exists
+        if (lastMarker) {
+            lastMarker.remove();
+        }
+
+        // Create a new marker
+        const marker = new mapboxgl.Marker({ color: color })
+            .setLngLat([lng, lat])
+            .addTo(map);
+
+        // Store reference to this marker
+        lastMarker = marker;
+
+        return marker;
+    }
+
+
+    /* Fly To Coors */ 
+    function zoomIn(lo, la) {  // note: in mapping softwares its switched long, lat is standard 
+
+        highlightBuilding(lo, la); 
+        addColoredPin(lo, la); 
+      //  coordinateFeature(lo, la);
+        
+        console.log("zooming"); 
+        map.flyTo({
+        center: [lo, la],
+        zoom: 17,
+        pitch: 0
+    });
+    }
+
+    let lastHighlightedBuildingId = null;
+
+
+    function highlightBuilding(lng, lat) {
+
+        const point = map.project([lng, lat]);
+
+    const features = map.queryRenderedFeatures(point, {
+        layers: ['3d-buildings']
     });
 
+    if (!features || features.length === 0) {
+        console.log("No building found at that coordinate");
+        return;
+    }
+
+    const building = features[0];
+
+    if (!building.id) {
+        console.log("Building has no ID (cannot highlight)");
+        return;
+    }
+
+    // Reset previous highlighted building
+    if (lastHighlightedBuildingId !== null) {
+        map.setFeatureState(
+            {
+                source: 'composite',
+                sourceLayer: 'building',
+                id: lastHighlightedBuildingId
+            },
+            { selected: false }
+        );
+    }
+
+    // Highlight new building
+    map.setFeatureState(
+        {
+            source: 'composite',
+            sourceLayer: 'building',
+            id: building.id
+        },
+        { selected: true }
+    );
+
+    lastHighlightedBuildingId = building.id; // remember new building
+
+}
+
+    /* Add Button Triggers */ 
+    button.addEventListener("click", async () => {
+
+    if (button.disabled) return;
+    button.disabled = true;
+
+
+    console.log("location");
+
+    try {
+        getLocation();   
+      getPlaces();   
+
+
+    } catch (e) {
+        console.log("Location failed.");
+        button.disabled = false;  // re-enable button if location fails
+    }
+
+    // Move map
+   // zoomIn(lat, long); 
+
+});
 
 
 };

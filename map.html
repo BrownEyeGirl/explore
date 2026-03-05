@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>3D Map + Search</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+<!-- Mapbox links -->
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet"/>
+<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.1.0/mapbox-gl-geocoder.min.js"></script>
+<link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.1.0/mapbox-gl-geocoder.css">
+<link rel="stylesheet" href="style.css">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+
+<!-- Coordinate links -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="style.css"/> 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+
+<style>
+
+
+</style>
+</head>
+
+<body>
+
+  <div class="topnav">
+    <a class="active" href="#home">LOGO</a>
+    <a href="#news">ABOUT</a>
+    <a href="#contact">GALLERY</a>
+  </div>
+
+  <button id="locate">LOCATE</button>
+
+
+  <div id="coordinate-results"></div>
+  <div id="map"></div>
+
+<!-- Loads after divs are loaded. order is important-->
+
+<script src="js/locate.js" defer></script>
+
+
+</body>
+</html>
