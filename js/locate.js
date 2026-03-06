@@ -9,15 +9,29 @@ window.onload = function () {
     let boundingBoxThreshold = 0.05; 
     let zoomDist = 2; 
 
+    // Pin data storage
+    let pins=[]; 
+    let gmapCoors = []; 
+    let num = 0; // to count position
 
     // Get button element
     const button = document.getElementById("locate"); 
     console.log(button); 
 
     // Establish div location + declare loading 
-        const resultsDiv = document.getElementById("coordinate-results");
+    const resultsDiv = document.getElementById("coordinate-results");
+    let close = document.createElement("button"); 
+    close.textContent="x"; 
+    resultsDiv.appendChild(close); 
+    let name = document.createElement("h1"); 
+    resultsDiv.appendChild(name); 
+    let info = document.createElement("p"); 
+    resultsDiv.appendChild(info); 
+
 
     resultsDiv.style.visibility = "hidden";
+
+
 
 
     /* Create Map */ 
@@ -125,7 +139,9 @@ map.on('load', () => {
         })
         .then(r => r.json()) // when the fetch request finishes, this takes the response and convert it into usable JSON.
         .then(data => { // take usable JSOn file, store it as the name "data",  and run this function to extract different classifications of data
-            
+
+
+            // adds each data to a pins array, drops pin at each location 
             data.elements.forEach(el => {
             if (el.type === "way" && el.bounds) {
 
@@ -133,37 +149,44 @@ map.on('load', () => {
                 let avgLat = (el.bounds.minlat + el.bounds.maxlat) / 2;
                 let avgLon = (el.bounds.minlon + el.bounds.maxlon) / 2;
 
-                // Create paragraph
-                const p = document.createElement("p");
-                dropPinAt(avgLon, avgLat);
+                // Add pin info to array 
+                pins.push(el); 
+                dropPinAt(avgLon, avgLat, num);
+                num++; 
 
-                // Create anchor tag to link to google maps
-                const a = document.createElement("button");
+                // Create paragraph
+                //
+
+                // Create anchor tag to link to google maps. same reference as the pin 
+                const gmap =  `https://www.google.com/maps/search/?api=1&query=${avgLat}%2C${avgLon}`;
+                gmapCoors.push(gmap); 
                 
                 //a.href = "#" 
                 // a.href = `zoomIn(${avgLat}, ${avgLon})`; // to google maps: `https://www.google.com/maps/search/?api=1&query=${avgLat}%2C${avgLon}`;//`https://www.google.com/maps/@${avgLat},${avgLon},${zoomDist}z`;   // same link for all
                 
-                a.target = "_blank"; 
-                let shortLat = avgLat.toFixed(3); 
-                let shortLon = avgLon.toFixed(3);                // opens in new tab
-                a.textContent = `Lat ${shortLat}, Lon ${shortLon} \n`;
+                //a.target = "_blank"; 
+                //let shortLat = avgLat.toFixed(3); 
+                //let shortLon = avgLon.toFixed(3);                // opens in new tab
+               // a.textContent = `Lat ${shortLat}, Lon ${shortLon} \n`;
 
-                a.addEventListener("click", (e) => {
-                    e.preventDefault();             // prevent page jump
-                    zoomIn(avgLon, avgLat);         // call your function
-                });
+               // a.addEventListener("click", (e) => {
+                  //  e.preventDefault();             // prevent page jump
+                   // zoomIn(avgLon, avgLat);         // call your function
+               // });
 
                 // Put <a> inside <p>
-                p.appendChild(a);
+               // p.appendChild(a);
 
                 // Add to page
-                resultsDiv.appendChild(p);
+              //  resultsDiv.appendChild(p);
             }
             //zoomIn(avgLat, avgLon); 
         });
         console.log("places found."); 
+
+        console.log("pins: ", pins); 
+
         
-        console.log(data.elements); // check if we got geometry
         // show results div 
         resultsDiv.style.visibility = "visible";
 
@@ -229,7 +252,7 @@ map.addControl(geocoder);
 // and trigger manually on button click
 
 
-   function dropPinAt(lng, lat) {
+   function dropPinAt(lng, lat, num) {
 
     // Use your coordinatesGeocoder function to get a Feature object
     const features = coordinatesGeocoder(`${lat}, ${lng}`);
@@ -237,17 +260,31 @@ map.addControl(geocoder);
 
     const feature = features[0];
 
-    // Create marker and store it in a variable
+    // Create pin and store it in a variable
     const marker = new mapboxgl.Marker({ color: "#ff0000" })
         .setLngLat([lng, lat])
         .addTo(map);
 
-    // Make the marker clickable
+    // WHEN PIN IS CLICKED 
     marker.getElement().addEventListener("click", () => {
-        console.log("Pin clicked:", lng, lat);
+
+        // highlight
         addColoredPin(lng, lat); 
         highlightBuilding(lng, lat);
 
+        // display data 
+        console.log("Pin clicked:", pins[num].tags); // find it in array 
+
+        let title = [JSON.stringify(pins[num].bounds.minlat), JSON.stringify(pins[num].bounds.minlon)]
+        let cont = JSON.stringify(pins[num].tags); 
+
+       // resultsDiv.textContent = cont; 
+
+        resultsDiv.querySelector("h1").textContent = title; 
+        resultsDiv.querySelector("p").textContent = cont;   
+
+        // display text content
+        resultsDiv.style.visibility = "visible";
 
 
         map.flyTo({
@@ -367,7 +404,13 @@ map.addControl(geocoder);
     // Move map
    // zoomIn(lat, long); 
 
+
 });
+
+    // close the info div button 
+    close.addEventListener("click", async () => {
+        resultsDiv.style.visibility = "hidden";
+    }) 
 
 
 };

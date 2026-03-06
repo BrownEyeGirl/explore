@@ -82,6 +82,7 @@ COORDINATES SIDENAV
   height: 100vh;
 
   overflow-y: auto;   /* scrollable */
+  color: white; 
 
   flex-direction: column; /* stack children vertically */
   background: rgba(0,0,0,0.85);
