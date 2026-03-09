@@ -10,8 +10,8 @@ window.onload = function () {
     let zoomDist = 2; 
 
     // styling
-    let markerColor = "#8400ffff"; 
-    let selectedMarkerColour = "#00ffe5ff"; 
+    let markerColor = "#0800ffff"; 
+    let selectedMarkerColour = "cornflowerblue"; 
 
     // Pin data storage
     let pins=[]; 
@@ -61,19 +61,6 @@ map.on('load', () => {
     })
   );
 
- 
-
-  map.addLayer({
-  id: 'sky',
-  type: 'sky',
-  paint: {
-    'sky-type': 'atmosphere',
-    'sky-atmosphere-sun-intensity': 5,
-    'sky-atmosphere-color': '#FFDFAA',
-    'sky-atmosphere-sun': [40, 40]
-  }
-});
-
   // 3D BUILDINGS
   map.addLayer({
   id: '3d-buildings',
@@ -81,13 +68,14 @@ map.on('load', () => {
   'source-layer': 'building',
   filter: ['==', 'extrude', 'true'],
   type: 'fill-extrusion',
+  
   minzoom: 6,
   paint: {
     // Highlight selected building in bright orange
     'fill-extrusion-color': [
       'case',
       ['boolean', ['feature-state', 'selected'], false],
-      '#4DA6FF',     // highlighted building (orange)
+      '#4DA6FF',     // highlighted building 
       [
         // Normal buildings: subtle height-based shading for visibility
         'interpolate',
@@ -97,6 +85,7 @@ map.on('load', () => {
         50, '#B0B0B0', // medium buildings, medium gray
         100, '#909090' // tallest buildings, darker gray
       ]
+
     ],
     // Use building height from data
     'fill-extrusion-height': ['get', 'height'],
@@ -108,24 +97,8 @@ map.on('load', () => {
 });
 
 
-map.addLayer({
-    id: 'sky',
-    type: 'sky',
-    paint: {
-      'sky-type': 'atmosphere',
-      'sky-atmosphere-sun': [0, 0],
-      'sky-atmosphere-sun-intensity': 10,
-      'sky-atmosphere-color': '#C8E0FF'
-    }
-  });
-
-
   const roadLayerIds = map.getStyle().layers.filter(l => l.id.includes('road')).map(l => l.id);
   roadLayerIds.forEach(id => map.setPaintProperty(id, 'line-color', '#B0B0B0'));
-
-// light
-
-
 
 });
 

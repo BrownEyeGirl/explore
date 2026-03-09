@@ -71,7 +71,7 @@ COORDINATES SIDENAV
 }
 
 #coordinate-results {
-    background-color: white;
+    background-color: rgb(0, 0, 0);
      display: flex;  
     position: absolute; /* Positions the button over the container */
     z-index: 5;        /* Ensures the button is above other content */
@@ -84,7 +84,7 @@ COORDINATES SIDENAV
   overflow-wrap: break-word;
 
   overflow-y: auto;   /* scrollable */
-  color: blue; 
+  color: cornflowerblue; 
 
   flex-direction: column; /* stack children vertically */
   padding: 10px;
