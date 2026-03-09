@@ -4,9 +4,9 @@
 window.onload = function () {
 
     // variables, default values 
-    let long = 45.5017;
-    let lat = -73.5673; 
-    let boundingBoxThreshold = 0.05; 
+    let lat =  45.5017;
+    let long = -73.5673; 
+    let boundingBoxThreshold = 0.1; 
     let zoomDist = 2; 
 
     // Pin data storage
@@ -15,11 +15,11 @@ window.onload = function () {
     let num = 0; // to count position
 
     // Get button element
-    const button = document.getElementById("locate"); 
-    console.log(button); 
+    const locate = document.getElementById("locate"); 
 
     // Establish div location + declare loading 
     const resultsDiv = document.getElementById("coordinate-results");
+    resultsDiv.style.visibility = "hidden"; // immediately hide 
     let close = document.createElement("button"); 
     close.textContent="x"; 
     resultsDiv.appendChild(close); 
@@ -28,19 +28,15 @@ window.onload = function () {
     let info = document.createElement("p"); 
     resultsDiv.appendChild(info); 
 
+    getPlaces(); 
 
-    resultsDiv.style.visibility = "hidden";
-
-
-
-
-    /* Create Map */ 
+/* Create Map */ 
 mapboxgl.accessToken = 'pk.eyJ1IjoiYWJoaXZvbGV0aSIsImEiOiJjbW05cWV4ZTEwNXJtMnVwdjNyNmg3YmtzIn0.18DTC_mGG-07zo8XgcOgXg';
 
 const map = new mapboxgl.Map({ //
   container: 'map',
   style: 'mapbox://styles/mapbox/dark-v11',
-  center: [-73.5673, 45.5017],
+  center: [long, lat],
   zoom: 15,
   pitch: 60,
   bearing: -20,
@@ -57,9 +53,6 @@ map.on('load', () => {
     showUserHeading: true
   })
 );
-
-// zoom in the centre
-
 
   // 3D BUILDINGS
   map.addLayer({
@@ -117,28 +110,40 @@ map.on('load', () => {
         // Overpass query (out body -> returns array of all body data, geom -> returns array of all coordinates listed for a spot) // less accurate results -> way["disused"="yes"] (${long-boundingBoxThreshold},${lat-boundingBoxThreshold},${long+boundingBoxThreshold},${lat+boundingBoxThreshold});
         console.log("places loading..."); 
 
-        // gets different types of data from the api, gives location range of 2*boundingBoxThreshold 
+        // gets different types of data from the api, gives location range of 2*boundingBoxThreshold  
+        /* 
+        */ 
+
         const query = `
         [out:json][timeout:180];
         (
-            way["building"]["abandoned"="yes"](${long-boundingBoxThreshold},${lat-boundingBoxThreshold},${long+boundingBoxThreshold},${lat+boundingBoxThreshold}); 
-            way["leisure"="skate_park"] (${long-boundingBoxThreshold},${lat-boundingBoxThreshold},${long+boundingBoxThreshold},${lat+boundingBoxThreshold}); 
-            way["building"="abandoned"] (${long-boundingBoxThreshold},${lat-boundingBoxThreshold},${long+boundingBoxThreshold},${lat+boundingBoxThreshold}); 
-            way["ruins"="*"] (${long-boundingBoxThreshold},${lat-boundingBoxThreshold},${long+boundingBoxThreshold},${lat+boundingBoxThreshold}); 
+            way["building"]["abandoned"="yes"](${lat-boundingBoxThreshold},${long-boundingBoxThreshold},${lat+boundingBoxThreshold},${long+boundingBoxThreshold}); 
+            way["leisure"="skate_park"](${lat-boundingBoxThreshold},${long-boundingBoxThreshold},${lat+boundingBoxThreshold},${long+boundingBoxThreshold}); 
+            way["building"="abandoned"](${lat-boundingBoxThreshold},${long-boundingBoxThreshold},${lat+boundingBoxThreshold},${long+boundingBoxThreshold}); 
+            way["ruins"="*"](${lat-boundingBoxThreshold},${long-boundingBoxThreshold},${lat+boundingBoxThreshold},${long+boundingBoxThreshold}); 
             );
         out body geom; 
         `;
 
         // Fetch from Overpass API (if code stops returning coordinates, its because there is an issue with this)
         fetch('https://overpass-api.de/api/interpreter', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded' 
-            },
-            body: 'data=' + encodeURIComponent(query) // body defined as data=[our overpass query here, URL-encoded]
-        })
-        .then(r => r.json()) // when the fetch request finishes, this takes the response and convert it into usable JSON.
-        .then(data => { // take usable JSOn file, store it as the name "data",  and run this function to extract different classifications of data
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: 'data=' + encodeURIComponent(query)
+})
+.then(async (response) => {
+
+    if (!response.ok) {
+        const text = await response.text();
+        console.error("Overpass error:", text);
+        throw new Error("Overpass request failed");
+    }
+
+    return response.json();
+})
+.then(data => { // take usable JSOn file, store it as the name "data",  and run this function to extract different classifications of data
 
 
             // adds each data to a pins array, drops pin at each location 
@@ -149,51 +154,25 @@ map.on('load', () => {
                 let avgLat = (el.bounds.minlat + el.bounds.maxlat) / 2;
                 let avgLon = (el.bounds.minlon + el.bounds.maxlon) / 2;
 
-                // Add pin info to array 
+                // Add pin info to array
                 pins.push(el); 
-                dropPinAt(avgLon, avgLat, num);
+                dropPinAt(avgLat, avgLon, num);
                 num++; 
 
-                // Create paragraph
-                //
-
-                // Create anchor tag to link to google maps. same reference as the pin 
+                // Create anchor tag to link to google maps. same reference as the pin. not being used 
                 const gmap =  `https://www.google.com/maps/search/?api=1&query=${avgLat}%2C${avgLon}`;
                 gmapCoors.push(gmap); 
-                
-                //a.href = "#" 
-                // a.href = `zoomIn(${avgLat}, ${avgLon})`; // to google maps: `https://www.google.com/maps/search/?api=1&query=${avgLat}%2C${avgLon}`;//`https://www.google.com/maps/@${avgLat},${avgLon},${zoomDist}z`;   // same link for all
-                
-                //a.target = "_blank"; 
-                //let shortLat = avgLat.toFixed(3); 
-                //let shortLon = avgLon.toFixed(3);                // opens in new tab
-               // a.textContent = `Lat ${shortLat}, Lon ${shortLon} \n`;
 
-               // a.addEventListener("click", (e) => {
-                  //  e.preventDefault();             // prevent page jump
-                   // zoomIn(avgLon, avgLat);         // call your function
-               // });
-
-                // Put <a> inside <p>
-               // p.appendChild(a);
-
-                // Add to page
-              //  resultsDiv.appendChild(p);
             }
-            //zoomIn(avgLat, avgLon); 
         });
+
+        // add info to console for debugging 
         console.log("places found."); 
-
         console.log("pins: ", pins); 
-
-        
-        // show results div 
-        resultsDiv.style.visibility = "visible";
 
         })
         .catch(err => console.error(err));
     }
-
 
 
 
@@ -252,43 +231,35 @@ map.addControl(geocoder);
 // and trigger manually on button click
 
 
-   function dropPinAt(lng, lat, num) {
+/* drops pin at location, logs reference for pin, adds listener for pin */ 
+function dropPinAt(lat, lon, num) {
 
     // Use your coordinatesGeocoder function to get a Feature object
-    const features = coordinatesGeocoder(`${lat}, ${lng}`);
+    const features = coordinatesGeocoder(`${lat}, ${lon}`);
     if (!features || features.length === 0) return;
 
     const feature = features[0];
 
     // Create pin and store it in a variable
     const marker = new mapboxgl.Marker({ color: "#ff0000" })
-        .setLngLat([lng, lat])
+        .setLngLat([lon, lat])
         .addTo(map);
 
     // WHEN PIN IS CLICKED 
     marker.getElement().addEventListener("click", () => {
 
         // highlight
-        addColoredPin(lng, lat); 
-        highlightBuilding(lng, lat);
+        addColoredPin(lon, lat); 
+        highlightBuilding(lon, lat);
 
+        displayPinInfo(num); 
         // display data 
         console.log("Pin clicked:", pins[num].tags); // find it in array 
 
-        let title = [JSON.stringify(pins[num].bounds.minlat), JSON.stringify(pins[num].bounds.minlon)]
-        let cont = JSON.stringify(pins[num].tags); 
 
-       // resultsDiv.textContent = cont; 
-
-        resultsDiv.querySelector("h1").textContent = title; 
-        resultsDiv.querySelector("p").textContent = cont;   
-
-        // display text content
-        resultsDiv.style.visibility = "visible";
-
-
+        // fly to pin animation 
         map.flyTo({
-            center: [lng, lat],
+            center: [lon, lat],
             zoom: 18, 
              padding: {
                 left: 300,   // width of your sidebar
@@ -300,11 +271,27 @@ map.addControl(geocoder);
     });
 }
 
+
+    /* Display Pin Info */ 
+    function displayPinInfo(num) {
+         // display text content
+        resultsDiv.style.visibility = "visible";
+
+        let title = [JSON.stringify(pins[num].bounds.minlat), JSON.stringify(pins[num].bounds.minlon)]
+        let cont = JSON.stringify(pins[num].tags); 
+
+        resultsDiv.querySelector("h1").textContent = title; 
+        resultsDiv.querySelector("p").textContent = cont;   
+
+    }
+
+
+
     // Keep a reference to the last marker
     let lastMarker = null;
 
-    // Function to add a colored pin at a given coordinate and remove the old one
-    function addColoredPin(lng, lat, color = "#0000ffff") {
+    /* add a colored pin at a given coordinate and remove the old one */ 
+    function addColoredPin(lon, lat, color = "#0000ffff") {
         // Remove the previous marker if it exists
         if (lastMarker) {
             lastMarker.remove();
@@ -312,7 +299,7 @@ map.addControl(geocoder);
 
         // Create a new marker
         const marker = new mapboxgl.Marker({ color: color })
-            .setLngLat([lng, lat])
+            .setLngLat([lon, lat])
             .addTo(map);
 
         // Store reference to this marker
@@ -333,9 +320,9 @@ map.addControl(geocoder);
     });
     }
 
+
+    /* FUNCTION HIGHLIGHTS SELECTED BUILDING */ 
     let lastHighlightedBuildingId = null;
-
-
     function highlightBuilding(lng, lat) {
 
         const point = map.project([lng, lat]);
@@ -382,18 +369,44 @@ map.addControl(geocoder);
 
 }
 
+
+geocoder.on('result', (e) => {
+
+    const coords = e.result.center; // [lng, lat]
+
+    long = coords[0];
+    lat = coords[1];
+
+    console.log("Search result:");
+    console.log("Latitude:", lat);
+    console.log("Longitude:", long);
+
+    // Move map to new location
+    map.flyTo({
+        center: [long, lat],
+        zoom: 15
+    });
+
+    // Reset previous data
+    pins = [];
+    gmapCoors = [];
+    num = 0;
+
+    // Call your API query again
+    getPlaces();
+});
+
     /* Add Button Triggers */ 
-    button.addEventListener("click", async () => {
+    locate.addEventListener("click", async () => {
 
-    if (button.disabled) return;
-    button.disabled = true;
-
+    if (locate.disabled) return;
+    locate.disabled = true;
 
     console.log("location");
 
     try {
-        getLocation();   
-      getPlaces();   
+     // getLocation();   
+      //getPlaces();   
 
 
     } catch (e) {
@@ -406,6 +419,10 @@ map.addControl(geocoder);
 
 
 });
+
+    document.addEventListener("submit", (e) => {
+        e.preventDefault();
+    });
 
     // close the info div button 
     close.addEventListener("click", async () => {
