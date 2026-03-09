@@ -9,9 +9,14 @@ window.onload = function () {
     let boundingBoxThreshold = 0.1; 
     let zoomDist = 2; 
 
+    // styling
+    let markerColor = "#8400ffff"; 
+    let selectedMarkerColour = "#00ffe5ff"; 
+
     // Pin data storage
     let pins=[]; 
     let gmapCoors = []; 
+    let favs = []; // link to favourite places, add them by their nums identifier (make sure to copy the info, nums identifiers change every reload)
     let num = 0; // to count position
 
     // Get button element
@@ -35,47 +40,96 @@ mapboxgl.accessToken = 'pk.eyJ1IjoiYWJoaXZvbGV0aSIsImEiOiJjbW05cWV4ZTEwNXJtMnVwd
 
 const map = new mapboxgl.Map({ //
   container: 'map',
-  style: 'mapbox://styles/mapbox/dark-v11',
+  style: 'mapbox://styles/mapbox/light-v11',
   center: [long, lat],
   zoom: 15,
   pitch: 60,
   bearing: -20,
   antialias: true
+
 });
+
 
 map.on('load', () => {
   map.addControl(
   new mapboxgl.GeolocateControl({
-    positionOptions: {
-      enableHighAccuracy: true
-    },
-    trackUserLocation: true,
-    showUserHeading: true
-  })
-);
+        positionOptions: {
+        enableHighAccuracy: true
+        },
+        trackUserLocation: true,
+        showUserHeading: true
+    })
+  );
+
+ 
+
+  map.addLayer({
+  id: 'sky',
+  type: 'sky',
+  paint: {
+    'sky-type': 'atmosphere',
+    'sky-atmosphere-sun-intensity': 5,
+    'sky-atmosphere-color': '#FFDFAA',
+    'sky-atmosphere-sun': [40, 40]
+  }
+});
 
   // 3D BUILDINGS
   map.addLayer({
-     id: '3d-buildings',
-    source: 'composite',
-    'source-layer': 'building',
-    filter: ['==', 'extrude', 'true'],
-    type: 'fill-extrusion',
-    minzoom: 4,
-    paint: {
-      'fill-extrusion-color': [
-         'case',
+  id: '3d-buildings',
+  source: 'composite',
+  'source-layer': 'building',
+  filter: ['==', 'extrude', 'true'],
+  type: 'fill-extrusion',
+  minzoom: 6,
+  paint: {
+    // Highlight selected building in bright orange
+    'fill-extrusion-color': [
+      'case',
       ['boolean', ['feature-state', 'selected'], false],
-      '#FFF', 
-        '#111'
-      ],
-      'fill-extrusion-height': ['get', 'height'],
-      'fill-extrusion-base': ['get', 'min_height'],
-      'fill-extrusion-opacity': 1
+      '#4DA6FF',     // highlighted building (orange)
+      [
+        // Normal buildings: subtle height-based shading for visibility
+        'interpolate',
+        ['linear'],
+        ['get', 'height'],
+        0, '#D0D0D0',  // shortest buildings, light gray
+        50, '#B0B0B0', // medium buildings, medium gray
+        100, '#909090' // tallest buildings, darker gray
+      ]
+    ],
+    // Use building height from data
+    'fill-extrusion-height': ['get', 'height'],
+    // Base of the building
+    'fill-extrusion-base': ['get', 'min_height'],
+    // Full opacity ensures visibility on light maps
+    'fill-extrusion-opacity': 0.95
+  }
+});
+
+
+map.addLayer({
+    id: 'sky',
+    type: 'sky',
+    paint: {
+      'sky-type': 'atmosphere',
+      'sky-atmosphere-sun': [0, 0],
+      'sky-atmosphere-sun-intensity': 10,
+      'sky-atmosphere-color': '#C8E0FF'
     }
   });
 
+
+  const roadLayerIds = map.getStyle().layers.filter(l => l.id.includes('road')).map(l => l.id);
+  roadLayerIds.forEach(id => map.setPaintProperty(id, 'line-color', '#B0B0B0'));
+
+// light
+
+
+
 });
+
+
 
     /* Get Current User Location */ 
     function getLocation() {
@@ -234,14 +288,14 @@ map.addControl(geocoder);
 /* drops pin at location, logs reference for pin, adds listener for pin */ 
 function dropPinAt(lat, lon, num) {
 
-    // Use your coordinatesGeocoder function to get a Feature object
+    // Use  coordinatesGeocoder function to get a Feature object
     const features = coordinatesGeocoder(`${lat}, ${lon}`);
     if (!features || features.length === 0) return;
 
     const feature = features[0];
 
     // Create pin and store it in a variable
-    const marker = new mapboxgl.Marker({ color: "#ff0000" })
+    const marker = new mapboxgl.Marker({ color: markerColor })
         .setLngLat([lon, lat])
         .addTo(map);
 
@@ -262,7 +316,7 @@ function dropPinAt(lat, lon, num) {
             center: [lon, lat],
             zoom: 18, 
              padding: {
-                left: 300,   // width of your sidebar
+                left: 300,   // width of sidebar
                 right: 0,
                 top: 0,
                 bottom: 0
@@ -291,7 +345,7 @@ function dropPinAt(lat, lon, num) {
     let lastMarker = null;
 
     /* add a colored pin at a given coordinate and remove the old one */ 
-    function addColoredPin(lon, lat, color = "#0000ffff") {
+    function addColoredPin(lon, lat, color = selectedMarkerColour) {
         // Remove the previous marker if it exists
         if (lastMarker) {
             lastMarker.remove();
@@ -392,11 +446,11 @@ geocoder.on('result', (e) => {
     gmapCoors = [];
     num = 0;
 
-    // Call your API query again
+    // Call getPlaces with the new lat/lon coordinates 
     getPlaces();
 });
 
-    /* Add Button Triggers */ 
+    /* Currently not doing anything */ 
     locate.addEventListener("click", async () => {
 
     if (locate.disabled) return;
