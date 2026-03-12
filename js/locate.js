@@ -12,6 +12,7 @@ window.onload = function () {
     // styling
     let markerColor = "#0800ffff"; 
     let selectedMarkerColour = "cornflowerblue"; 
+    let roadsCol = '#111'; 
 
     // Pin data storage
     let pins=[]; 
@@ -25,9 +26,16 @@ window.onload = function () {
     // Establish div location + declare loading 
     const resultsDiv = document.getElementById("coordinate-results");
     resultsDiv.style.visibility = "hidden"; // immediately hide 
+    let gMap = document.createElement("button")
+    gMap.textContent=">"; 
+    resultsDiv.appendChild(gMap); 
+    gMap.classList.add('info');
+
     let close = document.createElement("button"); 
     close.textContent="x"; 
     resultsDiv.appendChild(close); 
+    close.classList.add('info');
+
     let name = document.createElement("h1"); 
     resultsDiv.appendChild(name); 
     let info = document.createElement("p"); 
@@ -40,7 +48,7 @@ mapboxgl.accessToken = 'pk.eyJ1IjoiYWJoaXZvbGV0aSIsImEiOiJjbW05cWV4ZTEwNXJtMnVwd
 
 const map = new mapboxgl.Map({ //
   container: 'map',
-  style: 'mapbox://styles/mapbox/light-v11',
+  style: 'mapbox://styles/mapbox/satellite-streets-v12',
   center: [long, lat],
   zoom: 15,
   pitch: 60,
@@ -57,9 +65,21 @@ map.on('load', () => {
         enableHighAccuracy: true
         },
         trackUserLocation: true,
-        showUserHeading: true
-    })
+        showUserHeading: false
+    }),
+    "bottom-left"
   );
+  
+  map.addLayer({
+  id: 'dark-overlay',
+  type: 'background',
+  paint: {
+    'background-color': '#0A0A0A',  // deep night color
+    'background-opacity': 0.9   // adjust for darkness
+  }
+}, 'waterway-label'); // insert below labels
+map.setLayoutProperty('poi-label', 'visibility', 'none');
+
 
   // 3D BUILDINGS
   map.addLayer({
@@ -69,7 +89,7 @@ map.on('load', () => {
   filter: ['==', 'extrude', 'true'],
   type: 'fill-extrusion',
   
-  minzoom: 6,
+  minzoom: 0,
   paint: {
     // Highlight selected building in bright orange
     'fill-extrusion-color': [
@@ -81,26 +101,30 @@ map.on('load', () => {
         'interpolate',
         ['linear'],
         ['get', 'height'],
-        0, '#D0D0D0',  // shortest buildings, light gray
-        50, '#B0B0B0', // medium buildings, medium gray
-        100, '#909090' // tallest buildings, darker gray
-      ]
-
+        0,   '#111', // shortest buildings
+        50,  '#111', // medium buildings
+        100, '#111'  // tallest buildings
+]
     ],
     // Use building height from data
     'fill-extrusion-height': ['get', 'height'],
     // Base of the building
     'fill-extrusion-base': ['get', 'min_height'],
     // Full opacity ensures visibility on light maps
-    'fill-extrusion-opacity': 0.95
+    'fill-extrusion-opacity': 0.9,
+    'fill-extrusion-ambient-occlusion-intensity': 1
   }
-});
 
+
+  
+  
+});
 
   const roadLayerIds = map.getStyle().layers.filter(l => l.id.includes('road')).map(l => l.id);
-  roadLayerIds.forEach(id => map.setPaintProperty(id, 'line-color', '#B0B0B0'));
+  roadLayerIds.forEach(id => map.setPaintProperty(id, 'line-color', roadsCol));
 
 });
+
 
 
 
@@ -133,7 +157,9 @@ map.on('load', () => {
 
     /* Get Coordinates Near You */ 
     function getPlaces() {
-        
+        //reset pins
+        //let pins=[]; 
+
         // Overpass query (out body -> returns array of all body data, geom -> returns array of all coordinates listed for a spot) // less accurate results -> way["disused"="yes"] (${long-boundingBoxThreshold},${lat-boundingBoxThreshold},${long+boundingBoxThreshold},${lat+boundingBoxThreshold});
         console.log("places loading..."); 
 
@@ -283,7 +309,6 @@ function dropPinAt(lat, lon, num) {
         // display data 
         console.log("Pin clicked:", pins[num].tags); // find it in array 
 
-
         // fly to pin animation 
         map.flyTo({
             center: [lon, lat],
@@ -295,6 +320,11 @@ function dropPinAt(lat, lon, num) {
                 bottom: 0
             }
         });
+
+        gMap.addEventListener("click", async () => {
+            window.open('https://www.example.com', '_blank');
+        }) 
+
     });
 }
 
@@ -414,10 +444,7 @@ geocoder.on('result', (e) => {
         zoom: 15
     });
 
-    // Reset previous data
-    pins = [];
-    gmapCoors = [];
-    num = 0;
+
 
     // Call getPlaces with the new lat/lon coordinates 
     getPlaces();
@@ -454,7 +481,6 @@ geocoder.on('result', (e) => {
     // close the info div button 
     close.addEventListener("click", async () => {
         resultsDiv.style.visibility = "hidden";
-    }) 
-
+    });
 
 };

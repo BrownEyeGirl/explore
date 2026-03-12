@@ -1,0 +1,125 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+
+}
+
+html,
+body{
+    width: 100vw;
+    height: 500vh;
+    background-color: white;
+    overflow-x: hidden;
+
+}
+
+canvas{
+    display: block ;
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+#map{
+  position:absolute;
+  width:100%;
+  height:100%;
+}
+#map{
+  pointer-events: none;
+}
+.nav{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    padding: 1.5em;
+    display: flex;
+    z-index: 2;
+    mix-blend-mode: difference;
+}
+
+.nav-col{
+    flex: 1;
+}
+
+.nav-col:nth-child(1){
+    display: flex;
+
+}
+nav-col:nth-child(1){
+ flex: 1;
+}
+
+.nav-col:nth-child(2){
+    text-align: right;
+}
+
+p{
+    text-transform: uppercase;
+    font-family: "PP Monument Extended";
+    
+}
+
+.lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth[data-lenis-prevent] {
+ overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+    overflow: clip;
+}
+
+.lenis.lenis-smooth iframe{
+    pointer-events: none;
+}
+
+.floatingVideo {
+  position: fixed;
+  top: 90px;
+  left: 1320px;
+
+  width: 600px;
+  height: auto;
+
+  transform: translateX(-50%);
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.floatingVideo img,
+.floatingVideo video {
+  width: 100%;
+  height: auto;
+}
+
+.navl {
+  position: fixed;
+  top: 659px;
+  left: 1320px;
+
+  width: 46px;
+  height: auto;
+
+  transform: translateX(-50%);
+  z-index: 9999;
+}
+
+.navl img,
+.navl video {
+  width: 100%;
+  height: auto;
+}
+
+.navimg:hover {
+  content: url("assets/images/navone.png");
+}
+
+.navimg{
+  position: relative;
+  z-index: 999999;
+}

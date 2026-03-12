@@ -31,6 +31,10 @@ TOP NAVIGATION BAR
   display: flex;
   justify-content: flex-end; 
   height:45px; 
+
+  font-family: "Share Tech Mono", monospace; /* not woring atm */ 
+  font-weight: 400;
+  font-style: normal;
 }
 
 /* Style the links inside the navigation bar */
@@ -51,7 +55,7 @@ TOP NAVIGATION BAR
 
 /* Add a color to the active/current link */
 .topnav a.active {
-  background-color: #0044ff;
+  background-color: #52abff;
   color: white;
 }
 
@@ -68,6 +72,9 @@ COORDINATES SIDENAV
     color: white;
     border: none;
     cursor: pointer;
+    font-family: "Share Tech Mono", monospace; /* not woring atm */ 
+  font-weight: 400;
+  font-style: normal;
 }
 
 #coordinate-results {
@@ -109,17 +116,11 @@ COORDINATES SIDENAV
 MAIN PAGE 
 */
 
-#enter-button {
-    display: flex;  
-    position: absolute; /* Positions the button over the container */
-  top: 50%;           /* Places the top edge of the button at the vertical center */
-  left: 50%;          /* Places the left edge of the button at the horizontal center */
-  transform: translate(-50%, -50%); /* Centers the button precisely */
-  z-index: 10;        /* Ensures the button is above other content */
-  /* Optional: Further styling for the button */
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  cursor: pointer;
+
+.info {
+  color: pink; 
 }
+
+
+
+
