@@ -62,6 +62,28 @@ map.on('load', () => {
     }),
     "bottom-left"
   );
+
+
+  // toggle search 
+let searchActive = false;
+
+const toggle = document.getElementById("searchToggle");
+
+toggle.addEventListener("click", () => {
+
+  const searchBar = document.querySelector(".mapboxgl-ctrl-geocoder");
+
+  if (!searchActive) {
+    searchBar.classList.add("geocoder-visible");
+    console.log("search bar: " + searchBar.className); 
+    searchActive = true;
+  } else {
+    searchBar.classList.remove("geocoder-visible");
+    searchActive = false;
+  }
+
+});
+
   
   map.addLayer({
   id: 'dark-overlay',
@@ -289,17 +311,26 @@ const geocoder = new MapboxGeocoder({
   localGeocoder: coordinatesGeocoder,
   mapboxgl: mapboxgl,
   zoom: 16,
-  placeholder: 'Search or type: lng, lat',
+  placeholder: '   ',
   reverseGeocode: true
 });
 
 map.addControl(geocoder);
 
-// Remove the original geocoder.on('result') listener
-// and trigger manually on button click
+let marker = null;
 
+geocoder.on('result', (e) => {
 
+  const coords = e.result.center;
+  const lng = coords[0];
+  const lat = coords[1];
 
+  map.flyTo({
+    center: coords,
+    zoom: 17,
+    pitch: 60
+  });
+});
 
 /* drops pin at location, logs reference for pin, adds listener for pin */ 
 function dropPinAt(lat, lon, num) {
@@ -349,8 +380,19 @@ function dropPinAt(lat, lon, num) {
          // display text content
         resultsDiv.style.visibility = "visible";
 
-        let title = [JSON.stringify(pins[num].bounds.minlat), JSON.stringify(pins[num].bounds.minlon)]
+        let title = [JSON.stringify(pins[num].bounds.minlat), JSON.stringify(pins[num].bounds.minlon)]; 
         let cont = JSON.stringify(pins[num].tags); 
+       // let contClean = ""; 
+
+       /* cont.forEach(s => {
+            if(s) {
+                s = s.replace("{", "");
+                s = s.replace("}", "");
+                s = s.replace()
+                s = s + "\n"; 
+                contClean+=s;
+            }
+        }) */
 
         let overlayH = resultsDiv.querySelector("h1");
         overlayH.textContent = title; 

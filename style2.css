@@ -18,9 +18,27 @@ body {
     margin-right: auto;
 }
 
-.mapboxgl-ctrl-geocoder{
-  display:none; 
-}
+
+/* search toggle added to dom */ 
+
+  .mapboxgl-ctrl-geocoder {
+    display: none !important;
+    position: absolute !important;
+
+    transform: translate(-330%,100%) !important;
+    z-index: 100 !important;
+    width: 300px !important;
+    min-width: unset !important;
+    opacity: .7;
+  }
+
+  .geocoder-visible {
+    display: block !important;
+  }
+
+
+
+
 
 /** 
 TOP NAVIGATION BAR 

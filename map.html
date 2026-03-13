@@ -15,6 +15,7 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
 
+
 <!-- Coordinate links -->
 <link rel="stylesheet" href="style2.css"/> <!-- deleted -> <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>-->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -34,11 +35,6 @@
 </head>
 
 <body>
-
-
-
-
-
   <!--<div id="coordinate-results"></div>-->
   <div id="map"></div>
 
@@ -52,7 +48,7 @@
 
 
 <!-- Script here so that I can refer to the assets using a direct path. if in js file, error occurs-->
-<script differ>
+<script>
 
 // Create navbar div
 const navDiv = document.createElement("div");
@@ -76,7 +72,7 @@ navImg.style.display = "block";
 navDiv.appendChild(navImg);
 
 // Add navbar to the body (on top of map)
-document.body.appendChild(navDiv);
+document.body.appendChild(navDiv); // comment out to hide search bar 
 
 // nav buttons  
 // About 
@@ -145,7 +141,40 @@ gallery.addEventListener("mouseleave", () => {
   galleryImg.src = "assets/mpassets/gallery.png"; // revert back
 });
 
+// Search 
 
+// Create search button
+const search = document.createElement("button");
+search.id = "searchToggle";
+navDiv.appendChild(search);
+
+// Set the size and position
+search.style.width = "2.8%";
+search.style.height = "auto";
+search.style.padding = "0";  
+search.style.top = "20%";      // near bottom of the parent/div
+search.style.left = "90%";     // position from left
+search.style.border = "none";  // remove default border
+search.style.background = "none"; // remove default button background
+search.style.cursor = "pointer";  // pointer on hover
+search.style.position = "absolute"; // overlay
+
+// Add the image inside the search button
+const searchImg = document.createElement("img");
+searchImg.src = "assets/mpassets/search.png"; // your search icon image path
+searchImg.style.width = "100%";   // fills the button width
+searchImg.style.height = "auto";  // fills the button height
+searchImg.style.display = "block"; // removes inline spacing
+
+search.appendChild(searchImg);
+
+// Hover photo
+search.addEventListener("mouseenter", () => {
+  searchImg.src = "assets/mpassets/hoversearch.png"; // image to show on hover
+});
+search.addEventListener("mouseleave", () => {  
+  searchImg.src = "assets/mpassets/search.png"; // revert back
+});
 
 
 // Create results div 
@@ -160,6 +189,7 @@ coorsDiv.style.top = "50%";
 coorsDiv.style.left = "50%";
 coorsDiv.style.transform = "translate(-50%, -50%)"; // center exactly
 coorsDiv.style.width = "25vw";
+coorsDiv.style.borderRadius = "30%";
 
 // Create image for results div 
 const coorsImg = document.createElement("img");
