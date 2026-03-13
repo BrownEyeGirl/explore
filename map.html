@@ -189,7 +189,8 @@ coorsDiv.style.top = "50%";
 coorsDiv.style.left = "50%";
 coorsDiv.style.transform = "translate(-50%, -50%)"; // center exactly
 coorsDiv.style.width = "25vw";
-coorsDiv.style.borderRadius = "30%";
+coorsDiv.style.fontSize = "1vw"; // scales with viewport width
+
 
 // Create image for results div 
 const coorsImg = document.createElement("img");
@@ -200,6 +201,7 @@ coorsImg.style.width = "100%";
 coorsImg.style.height = "auto";
 coorsImg.style.display = "block";
 coorsImg.style.position = "relative";
+coorsImg.style.borderRadius = "8px";
 coorsDiv.appendChild(coorsImg); 
 
 
