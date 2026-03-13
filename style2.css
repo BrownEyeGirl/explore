@@ -37,6 +37,18 @@ body {
   }
 
 
+#modelViewer {
+    position: fixed;
+    top: 50%;
+    left: 26%;
+    transform: translate(-51%, -43.5%);
+    width: 1000px;
+    height: 670px;
+    background: transparent;
+    z-index: 9999;
+    overflow: visible;
+    z-index: 9; 
+}
 
 
 

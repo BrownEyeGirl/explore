@@ -15,6 +15,14 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
 
+<script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/"
+    }
+  }
+</script>
 
 <!-- Coordinate links -->
 <link rel="stylesheet" href="style2.css"/> <!-- deleted -> <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>-->
@@ -37,13 +45,16 @@
 <body>
   <!--<div id="coordinate-results"></div>-->
   <div id="map"></div>
-
+<div id="modelViewer" style="display:none;"></div>
+<!-- <div id="coordinate-results"></div> -->
 <!-- Loads after divs are loaded. order is important
    <div class="topnav">
   <a href="#">Home</a>
   <a href="#">About</a>
   <a href="#">Projects</a>
 </div>-->
+
+
 
 
 
@@ -75,6 +86,27 @@ navDiv.appendChild(navImg);
 document.body.appendChild(navDiv); // comment out to hide search bar 
 
 // nav buttons  
+// Logo 
+const logo = document.createElement("div");
+logo.id="logo"; 
+navDiv.appendChild(logo); 
+
+logo.style.width = "100px";
+logo.style.height = "60px";
+logo.style.padding = "0";  
+logo.style.top = "0";      // near bottom of the parent/div
+logo.style.left = "2%";     // position from left
+logo.style.border = "none";  // remove default border
+logo.style.background = "none"; // remove default button background
+logo.style.cursor = "pointer";  // pointer on hover
+logo.style.position = "absolute"; // overlay
+logo.style.backgroundColor = "none";
+logo.style.zIndex = "30"
+
+logo.onclick = function () { // direct to new page 
+  window.location.href = "index.html";
+};
+
 // About 
 const about = document.createElement("button");
 about.id="about-btn";
@@ -201,7 +233,7 @@ coorsImg.style.width = "100%";
 coorsImg.style.height = "auto";
 coorsImg.style.display = "block";
 coorsImg.style.position = "relative";
-coorsImg.style.borderRadius = "8px";
+coorsImg.style.borderRadius = "8px";g
 coorsDiv.appendChild(coorsImg); 
 
 
@@ -269,7 +301,18 @@ gmap.addEventListener("mouseleave", () => {
 
 </script> 
 
-<script src="js/locate.js" defer></script>
+<script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/"
+    }
+  }
+</script>
+
+<script type="module" src="js/locate.js" defer></script>
+
+<!--<script src="js/locate.js" defer></script>--> 
 
 
 </body>
