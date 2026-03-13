@@ -12,29 +12,22 @@ window.onload = function () {
     // styling
     let markerColor = "#0800ffff"; 
     let selectedMarkerColour = "cornflowerblue"; 
-    let roadsCol = '#111'; 
+    let roadsCol = '#68A'; 
 
     // Pin data storage
     let pins=[]; 
-    let gmapCoors = []; 
+    let gmapCoors = ""; 
     let favs = []; // link to favourite places, add them by their nums identifier (make sure to copy the info, nums identifiers change every reload)
     let num = 0; // to count position
-
-    // Get button element
-    const locate = document.getElementById("locate"); 
 
     // Establish div location + declare loading 
     const resultsDiv = document.getElementById("coordinate-results");
     resultsDiv.style.visibility = "hidden"; // immediately hide 
-    let gMap = document.createElement("button")
-    gMap.textContent=">"; 
-    resultsDiv.appendChild(gMap); 
-    gMap.classList.add('info');
+    let googleMap = document.getElementById("gmap-btn")
+    
 
-    let close = document.createElement("button"); 
-    close.textContent="x"; 
-    resultsDiv.appendChild(close); 
-    close.classList.add('info');
+    const close = document.getElementById("close-btn");
+
 
     let name = document.createElement("h1"); 
     resultsDiv.appendChild(name); 
@@ -74,8 +67,8 @@ map.on('load', () => {
   id: 'dark-overlay',
   type: 'background',
   paint: {
-    'background-color': '#0A0A0A',  // deep night color
-    'background-opacity': 0.9   // adjust for darkness
+    'background-color': '#FFF',  // deep night color
+    'background-opacity': 0.6  // adjust for darkness
   }
 }, 'waterway-label'); // insert below labels
 map.setLayoutProperty('poi-label', 'visibility', 'none');
@@ -101,9 +94,17 @@ map.setLayoutProperty('poi-label', 'visibility', 'none');
         'interpolate',
         ['linear'],
         ['get', 'height'],
-        0,   '#111', // shortest buildings
-        50,  '#111', // medium buildings
-        100, '#111'  // tallest buildings
+        0,   '#525252',  // shortest → darkest grey
+        10,  '#6b6b6b',
+        20,  '#858585',
+        30,  '#9e9e9e',
+        40,  '#b8b8b8',
+        50,  '#c2c2c2',
+        60,  '#cccccc',
+        80,  '#d6d6d6',
+        100, '#e0e0e0',
+        120, '#ebebeb',
+        150, '#f5f5f5'   // tallest → very light grey
 ]
     ],
     // Use building height from data
@@ -111,17 +112,31 @@ map.setLayoutProperty('poi-label', 'visibility', 'none');
     // Base of the building
     'fill-extrusion-base': ['get', 'min_height'],
     // Full opacity ensures visibility on light maps
-    'fill-extrusion-opacity': 0.9,
-    'fill-extrusion-ambient-occlusion-intensity': 1
+    'fill-extrusion-opacity': 1,
+    'fill-extrusion-ambient-occlusion-intensity': 0.8
   }
 
 
   
   
 });
+map.getStyle().layers.forEach(layer => {
 
-  const roadLayerIds = map.getStyle().layers.filter(l => l.id.includes('road')).map(l => l.id);
-  roadLayerIds.forEach(id => map.setPaintProperty(id, 'line-color', roadsCol));
+    if (layer['source-layer'] === 'road') {
+
+        // change road color
+        if (map.getPaintProperty(layer.id, 'line-color') !== undefined) {
+            map.setPaintProperty(layer.id, 'line-color', roadsCol);
+        }
+
+        // move road above overlay
+        try {
+            map.moveLayer(layer.id);
+        } catch(e) {}
+
+    }
+
+});
 
 });
 
@@ -213,8 +228,8 @@ map.setLayoutProperty('poi-label', 'visibility', 'none');
                 num++; 
 
                 // Create anchor tag to link to google maps. same reference as the pin. not being used 
-                const gmap =  `https://www.google.com/maps/search/?api=1&query=${avgLat}%2C${avgLon}`;
-                gmapCoors.push(gmap); 
+                gmapCoors =  `https://www.google.com/maps/search/?api=1&query=${avgLat}%2C${avgLon}`;
+                
 
             }
         });
@@ -284,6 +299,8 @@ map.addControl(geocoder);
 // and trigger manually on button click
 
 
+
+
 /* drops pin at location, logs reference for pin, adds listener for pin */ 
 function dropPinAt(lat, lon, num) {
 
@@ -321,14 +338,12 @@ function dropPinAt(lat, lon, num) {
             }
         });
 
-        gMap.addEventListener("click", async () => {
-            window.open('https://www.example.com', '_blank');
+        googleMap.addEventListener("click", async () => {
+            window.open(gmapCoors, '_blank');
         }) 
 
     });
 }
-
-
     /* Display Pin Info */ 
     function displayPinInfo(num) {
          // display text content
@@ -337,9 +352,36 @@ function dropPinAt(lat, lon, num) {
         let title = [JSON.stringify(pins[num].bounds.minlat), JSON.stringify(pins[num].bounds.minlon)]
         let cont = JSON.stringify(pins[num].tags); 
 
-        resultsDiv.querySelector("h1").textContent = title; 
-        resultsDiv.querySelector("p").textContent = cont;   
+        let overlayH = resultsDiv.querySelector("h1");
+        overlayH.textContent = title; 
+        let overlayP =resultsDiv.querySelector("p");
+        overlayP.textContent = cont;   
 
+        //css for overlay text H
+        overlayH.style.position = "absolute";       // overlay
+        overlayH.style.top = "30%";                 // center vertically
+        overlayH.style.left = "50%";                // center horizontally
+        overlayH.style.transform = "translate(-50%, -50%)"; // true center
+        overlayH.style.color = "#7d7b7b";
+        overlayH.style.fontSize = "100%";
+        overlayH.style.textShadow = "0.5px 1px 3px #cececeff"; // improves readability
+        overlayH.style.margin = "0";   
+        overlayH.style.fontFamily = "IBM Plex Mono";
+        overlayH.style.fontWeight = "400";
+        overlayH.style.fontStyle = "normal";
+
+        // css for overlay text P
+        overlayP.style.position = "absolute";       // overlay
+        overlayP.style.top = "50%";                 // center vertically
+        overlayP.style.left = "50%";                // center horizontally
+        overlayP.style.transform = "translate(-50%, -60%)"; // true center
+        overlayP.style.color = "#7d7b7b";
+        overlayP.style.fontSize = "70%";
+        overlayP.style.textShadow = "0.5px 1px 3px #cececeff"; // improves readability
+        overlayP.style.margin = "0";   
+        overlayP.style.fontFamily = "IBM Plex Mono";
+        overlayP.style.fontWeight = "400";
+        overlayP.style.fontStyle = "normal";
     }
 
 
@@ -361,6 +403,19 @@ function dropPinAt(lat, lon, num) {
 
         // Store reference to this marker
         lastMarker = marker;
+        marker.getElement().addEventListener("click", () => {
+
+    addColoredPin(lon, lat); 
+    highlightBuilding(lon, lat);
+    displayPinInfo(num);
+
+    // show 3D model
+    document.getElementById("modelViewer").style.display = "block";
+    if(!renderer){
+initModel();
+    }
+
+});
 
         return marker;
     }
@@ -427,6 +482,7 @@ function dropPinAt(lat, lon, num) {
 }
 
 
+
 geocoder.on('result', (e) => {
 
     const coords = e.result.center; // [lng, lat]
@@ -450,8 +506,12 @@ geocoder.on('result', (e) => {
     getPlaces();
 });
 
-    /* Currently not doing anything */ 
-    locate.addEventListener("click", async () => {
+
+
+    /* Locate button removed */ 
+     // Get button element
+     //const locate = document.getElementById("locate");
+    /* locate.addEventListener("click", async () => {
 
     if (locate.disabled) return;
     locate.disabled = true;
@@ -466,21 +526,106 @@ geocoder.on('result', (e) => {
     } catch (e) {
         console.log("Location failed.");
         button.disabled = false;  // re-enable button if location fails
-    }
+    } 
 
     // Move map
    // zoomIn(lat, long); 
 
 
-});
+}); */
+
+
 
     document.addEventListener("submit", (e) => {
         e.preventDefault();
     });
 
-    // close the info div button 
-    close.addEventListener("click", async () => {
+     close.addEventListener("click", async () => {
+
+                console.log("entered close button")
+
         resultsDiv.style.visibility = "hidden";
+
+        // stop 3D viewer
+        document.getElementById("modelViewer").style.display = "none";
+
     });
 
-};
+    
+
+function buildinganimation() {
+
+   
+
+}
+
+let scene, camera, renderer, model;
+
+function initModel(){
+
+console.log("Initializing 3D viewer");
+
+const container = document.getElementById("modelViewer");
+
+scene = new THREE.Scene();
+
+camera = new THREE.PerspectiveCamera(
+75,
+container.clientWidth / container.clientHeight,
+0.1,
+1000
+);
+
+camera.position.z = 5;
+
+// renderer
+renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+renderer.setSize(container.clientWidth, container.clientHeight);
+container.appendChild(renderer.domElement);
+
+// light
+const light = new THREE.HemisphereLight(0xffffff, 0x444444, 2);
+scene.add(light);
+
+// loader
+const loader = new THREE.GLTFLoader();
+
+console.log("Starting GLB load...");
+
+loader.load(
+
+"assets/abandoned_skyscraper.glb",
+
+function(gltf){
+
+console.log("MODEL SUCCESSFULLY LOADED");
+console.log("GLTF DATA:", gltf);
+
+model = gltf.scene;
+
+model.scale.set(10,10,10);
+
+scene.add(model);
+
+},
+
+function(progress){
+
+if(progress.total){
+console.log("Loading progress:",
+Math.round((progress.loaded / progress.total)*100) + "%");
+}else{
+console.log("Loading progress:", progress.loaded);
+}
+
+},
+
+function(error){
+
+console.error("MODEL FAILED TO LOAD");
+console.error(error);
+
+}
+);
+}
+}

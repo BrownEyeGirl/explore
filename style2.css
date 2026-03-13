@@ -1,0 +1,128 @@
+
+
+body { 
+    margin: 0px; 
+    overflow: hidden; 
+}
+
+
+#map { 
+
+    top: 0px; 
+    bottom: 0px; 
+    width: 100%; 
+    justify-content: center; /* Centers items horizontally */
+    align-items: center;     /* Centers items vertically */
+    height:100vh; 
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.mapboxgl-ctrl-geocoder{
+  display:none; 
+}
+
+/** 
+TOP NAVIGATION BAR 
+*/ 
+/* Add a black background color to the top navigation */
+.topnav {
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% auto; /* width = 100%, height auto */
+
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  width: 100%;
+  height: auto;
+
+  font-family: "Share Tech Mono", monospace;
+}
+/* Style the links inside the navigation bar 
+.topnav a {
+  float: left;
+  color: #000000;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+.topnav a:hover {
+  background-color: #000000;
+  color: rgb(255, 255, 255);
+}
+
+.topnav a.active {
+  background-color: #52abff;
+  color: white;
+}
+
+/**
+COORDINATES SIDENAV 
+*/
+#locate {
+    display: flex;  
+    position: absolute; /* Positions the button over the container */
+    z-index: 10;        /* Ensures the button is above other content */
+    /* Optional: Further styling for the button */
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-family: "Share Tech Mono", monospace; /* not woring atm */ 
+  font-weight: 400;
+  font-style: normal;
+}
+
+/*#coordinate-results {
+    background-color: rgb(0, 0, 0);
+     display: flex;  
+    position: absolute; 
+    z-index: 5;        
+
+    margin-top: 50px; 
+  left: 20;
+  top: 20; 
+  width: 400px;
+  height: auto;
+  overflow-wrap: break-word;
+
+  overflow-y: auto;  
+  color: cornflowerblue; 
+
+  flex-direction: column; 
+  padding: 10px;
+
+    font-family: "Share Tech Mono", monospace; 
+  font-weight: 400;
+  font-style: normal;
+}*/
+
+
+/*#coordinate-results p {
+  margin: 5px;
+  padding: 8px 10px;
+  color: white;
+  background: #222;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex; 
+}*/
+
+/** 
+MAIN PAGE 
+*/
+/*********************************************
+
+Here is a description of any special CSS used.
+In this case it's just padding and margin to 0
+and then centring the canvas (and anything else)
+using the CSS Grid.
+
+Also hides overflow.
+
+**********************************************/
